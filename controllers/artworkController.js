@@ -1,4 +1,7 @@
+const jwt = require('jsonwebtoken');
+
 const Artwork = require('../models/artworkModel');
+const User = require('../models/userModel');
 
 exports.getArtwork = async (req, res, next) => {
   try {
@@ -29,7 +32,11 @@ exports.getAllArtworks = async (req, res, next) => {
 
 exports.postArtwork = async (req, res, next) => {
   try {
-    const newArtwork = await Artwork.create(req.body);
+    const newArtwork = await Artwork.create({
+      title: req.body.title,
+      path: req.body.path,
+      author: req.user.id,
+    });
 
     res.json(newArtwork);
   } catch (error) {

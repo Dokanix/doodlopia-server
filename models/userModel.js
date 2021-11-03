@@ -20,14 +20,16 @@ const userSchema = new mongoose.Schema(
     joined: {
       type: Date,
     },
-  },
+  }
+  /*
   {
     virtuals: true,
     toObject: true,
   }
+  */
 );
 
-userScheam.virtual('level').get(function () {
+userSchema.virtual('level').get(function () {
   const levelThresholds = [
     1, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9,
   ];
