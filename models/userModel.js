@@ -1,33 +1,26 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 
-const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: [true, 'An user must have a name'],
-      unique: true,
-      trim: true,
-    },
-    experience: {
-      type: Number,
-      default: 0,
-    },
-    password: {
-      type: String,
-      required: [true, 'An user must have a password'],
-    },
-    joined: {
-      type: Date,
-    },
-  }
-  /*
-  {
-    virtuals: true,
-    toObject: true,
-  }
-  */
-);
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'An user must have a name'],
+    unique: true,
+    trim: true,
+  },
+  experience: {
+    type: Number,
+    default: 0,
+  },
+  password: {
+    type: String,
+    required: [true, 'An user must have a password'],
+    select: false,
+  },
+  joinedAt: {
+    type: Date,
+  },
+});
 
 userSchema.virtual('level').get(function () {
   const levelThresholds = [

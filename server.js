@@ -13,25 +13,6 @@ mongoose
 
 const PORT = process.env.PORT || 3000;
 
-/*
-REJESTROWANIE
-LOGOWANIE
-
-DODAWANIE ARTWORKU TYLKO DLA ZALOGOWANYCH
-
-ROUTES:
-  USER:
-    REGISTER (EMAIL, LOGIN, PASSWORD) -> DATE
-    LOGIN (LOGIN, PASSWORD) <- TOKEN
-    ADMIN:
-      DELETE
-
-  ARTWORKS:
-    GET <- SORT=DATE|LIKES USER 
-    POST
-
-*/
-
 app.listen(PORT, () => {
   console.log(`Server running at port ${PORT}`);
 });

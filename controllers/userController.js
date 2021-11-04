@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const saltRounds = 10;
+const saltRounds = 12;
 
 const User = require('../models/userModel');
 
@@ -22,7 +22,7 @@ exports.register = async (req, res, next) => {
     const newUser = await User.create({
       name: req.body.name,
       password: hashedPassword,
-      joined: new Date(),
+      joinedAt: new Date(),
     });
 
     newUser.password = undefined;
@@ -38,7 +38,9 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
-    const comparedUser = await User.findOne({ name: req.body.name });
+    const comparedUser = await User.findOne({ name: req.body.name }).select(
+      '+password'
+    );
 
     if (!comparedUser) return next(new Error('Wrong Login or Password'));
 
@@ -55,8 +57,6 @@ exports.login = async (req, res, next) => {
       { id: comparedUser._id, name: comparedUser.name },
       process.env.TOKEN_SECRET
     );
-
-    console.log(req.secure);
 
     res
       .cookie('jwt', token, {

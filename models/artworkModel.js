@@ -15,9 +15,12 @@ const artworkSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  upvotes: {
+  likes: {
     type: Number,
     default: 0,
+  },
+  addedAt: {
+    type: Date,
   },
   contest: {
     type: mongoose.Schema.Types.ObjectId,
