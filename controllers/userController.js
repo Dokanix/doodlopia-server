@@ -5,13 +5,35 @@ const saltRounds = 12;
 
 const User = require('../models/userModel');
 
+exports.getMe = async (req, res, next) => {
+  req.params.id = res.locals.user.id;
+  next();
+};
+
 exports.getAllUsers = async (req, res, next) => {
   try {
     const users = await User.find({});
 
-    res.send(users);
+    res.status(200).json({
+      status: 'success',
+      results: users.length,
+      data: users,
+    });
   } catch (error) {
-    next();
+    next(error);
+  }
+};
+
+exports.getUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    res.status(200).json({
+      status: 'success',
+      data: user,
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -22,7 +44,6 @@ exports.register = async (req, res, next) => {
     const newUser = await User.create({
       name: req.body.name,
       password: hashedPassword,
-      joinedAt: new Date(),
     });
 
     newUser.password = undefined;
@@ -79,7 +100,7 @@ exports.restrictToLoggedUsers = async (req, res, next) => {
 
     if (!user) return next(new Error('Wrong Token'));
 
-    req.user = user;
+    res.locals.user = user;
     next();
   } catch (error) {
     next(error);

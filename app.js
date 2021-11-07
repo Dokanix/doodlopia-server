@@ -5,6 +5,7 @@ const path = require('path');
 const artworkRouter = require('./routes/artworkRoutes');
 const userRouter = require('./routes/userRoutes');
 const likeRouter = require('./routes/likeRoutes');
+const commentRouter = require('./routes/commentRoutes');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(cookieParser());
 app.use('/artworks', artworkRouter);
 app.use('/users', userRouter);
 app.use('/likes', likeRouter);
+app.use('/comments', commentRouter);
 
 app.use('/*', (req, res, next) => {
   res.status(404).json({ message: 'Invalid url' });

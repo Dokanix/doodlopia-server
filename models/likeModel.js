@@ -13,6 +13,7 @@ const likeSchema = new mongoose.Schema({
   },
   date: {
     type: Date,
+    default: Date.now(),
     required: [true, 'A like must have a date'],
   },
 });

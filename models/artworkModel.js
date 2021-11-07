@@ -15,12 +15,17 @@ const artworkSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  likes: {
+  likeCount: {
+    type: Number,
+    default: 0,
+  },
+  commentCount: {
     type: Number,
     default: 0,
   },
   addedAt: {
     type: Date,
+    default: Date.now(),
   },
   contest: {
     type: mongoose.Schema.Types.ObjectId,
