@@ -1,49 +1,45 @@
 import Like from '../models/likeModel.js';
 import Artwork from '../models/artworkModel.js';
 import asyncCatch from '../utils/asyncCatch.js';
-
-export const getLikesByArtwork = asyncCatch(async (req, res, next) => {
-  const likes = await Like.find({ artwork: req.params.id });
-
-  res.status(200).json({ likes });
-});
-
-export const getLikesByUser = asyncCatch(async (req, res, next) => {
-  const likes = await Like.find({ user: req.params.id });
-
-  res.status(200).json({ likes });
-});
-
-export const getAllLikes = asyncCatch(async (req, res, next) => {
-  const likes = await Like.find({});
-
-  res.status(200).json({ likes });
-});
+import likeService from '../services/likeService.js';
 
 export const postLike = asyncCatch(async (req, res, next) => {
-  const newLike = await Like.create({
+  const likeData = {
     user: res.locals.user.id,
     artwork: req.body.artwork,
-  });
+  };
 
-  await Artwork.findByIdAndUpdate(req.body.artwork, {
-    $inc: { likeCount: 1 },
-  });
+  const newLike = await likeService.create(likeData);
 
   res.json(newLike);
 });
 
+export const getLike = asyncCatch(async (req, res, next) => {
+  const like = await likeService.get(req.params.id);
+
+  res.json(like);
+});
+
+export const getAllLikes = asyncCatch(async (req, res, next) => {
+  const likes = await likeService.getAll();
+
+  res.status(200).json({ likes });
+});
+
+export const getLikesByArtwork = asyncCatch(async (req, res, next) => {
+  const likes = await likeService.getByArtwork(req.params.id);
+
+  res.status(200).json({ likes });
+});
+
 export const deleteLike = asyncCatch(async (req, res, next) => {
-  const removedLike = await Like.findOneAndDelete({
-    author: res.locals.user.id,
-    _id: req.params.id,
-  });
+  await likeService.remove(res.locals.user.id, req.params.id);
 
-  if (!removedLike) return next(new Error('No like to delete'));
+  res.status(200).end();
+});
 
-  await Artwork.findByIdAndUpdate(removedLike.artwork, {
-    $inc: { likeCount: -1 },
-  });
+export const deleteLikeByArtwork = asyncCatch(async (req, res, next) => {
+  await likeService.removeByArtwork(req.params.id, res.locals.user.id);
 
   res.status(200).end();
 });

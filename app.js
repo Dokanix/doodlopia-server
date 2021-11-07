@@ -1,12 +1,12 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import path from 'path';
 
 import artworkRouter from './routes/artworkRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import likeRouter from './routes/likeRoutes.js';
 import commentRouter from './routes/commentRoutes.js';
 import searchRouter from './routes/searchRoutes.js';
+import setOptions from './utils/setOptions.js';
 
 const app = express();
 
@@ -14,6 +14,9 @@ app.use(express.static('public'));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
+
+// My middleware
+app.use(setOptions);
 
 app.use('/artworks', artworkRouter);
 app.use('/users', userRouter);

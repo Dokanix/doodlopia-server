@@ -12,6 +12,7 @@ router
 
 router
   .route('/:id')
+  .get(likeController.getLike)
   .delete(userController.restrictToLoggedUsers, likeController.deleteLike);
 
 export default router;

@@ -29,6 +29,12 @@ router.route('/:id').get(artworkController.getArtwork);
 
 router.route('/:id/comments').get(commentController.getCommentsByArtwork);
 
-router.route('/:id/likes').get(likeController.getLikesByArtwork);
+router
+  .route('/:id/likes')
+  .get(likeController.getLikesByArtwork)
+  .delete(
+    userController.restrictToLoggedUsers,
+    likeController.deleteLikeByArtwork
+  );
 
 export default router;

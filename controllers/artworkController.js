@@ -2,8 +2,7 @@ import multer from 'multer';
 import sharp from 'sharp';
 
 import asyncCatch from '../utils/asyncCatch.js';
-import Artwork from '../models/artworkModel.js';
-import User from '../models/userModel.js';
+import artworkService from '../services/artworkService.js';
 
 const multerStorage = multer.memoryStorage();
 const multerFilter = (req, file, cb) => {
@@ -44,34 +43,41 @@ export function getNewArtworks(req, res, next) {
   next();
 }
 
-export const getArtwork = asyncCatch(async (req, res, next) => {
-  const artwork = await Artwork.findById(req.params.id);
+export const postArtwork = asyncCatch(async (req, res, next) => {
+  const artworkData = {
+    title: req.body.title,
+    path: req.file.filename,
+    author: res.locals.user.id,
+  };
 
-  res.json({ artwork });
+  const newArtwork = await artworkService.create(artworkData);
+
+  res.json(newArtwork);
+});
+
+export const getArtwork = asyncCatch(async (req, res, next) => {
+  const artwork = await artworkService.get(req.params.id);
+
+  res.json(artwork);
 });
 
 export const getAllArtworks = asyncCatch(async (req, res, next) => {
-  const page = Number(req.query.page ?? 1);
-  const limit = 20;
-
-  const artworks = await Artwork.find({})
-    .sort(req.query.sort)
-    .skip((page - 1) * limit)
-    .limit(limit);
+  const artworks = await artworkService.getAll(res.locals.options);
 
   res.json({ artworks });
 });
 
-export const postArtwork = asyncCatch(async (req, res, next) => {
-  const newArtwork = await Artwork.create({
-    title: req.body.title,
-    path: req.file.filename,
-    author: res.locals.user.id,
-  });
+export const getArtworksByAuthor = asyncCatch(async (req, res, next) => {
+  const artworks = await artworkService.getByAuthor(
+    req.params.id,
+    res.locals.options
+  );
 
-  await User.findByIdAndUpdate(res.locals.user.id, {
-    $inc: { experience: 1 },
-  });
+  res.json({ artworks });
+});
 
-  res.json(newArtwork);
+export const deleteArtwork = asyncCatch(async (req, res, next) => {
+  await artworkService.remove(req.params.id, res.locals.user.id);
+
+  res.status(200).end();
 });

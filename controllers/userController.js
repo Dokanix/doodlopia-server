@@ -1,61 +1,26 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-
-const saltRounds = 12;
-
-import User from '../models/userModel.js';
 import asyncCatch from '../utils/asyncCatch.js';
-
-export async function getMe(req, res, next) {
-  req.params.id = res.locals.user.id;
-  next();
-}
-
-export const getAllUsers = asyncCatch(async (req, res, next) => {
-  const users = await User.find({});
-
-  res.status(200).json({ users });
-});
-
-export const getUser = asyncCatch(async (req, res, next) => {
-  const user = await User.findById(req.params.id);
-
-  res.status(200).json(user);
-});
+import userService from '../services/userService.js';
 
 export const register = asyncCatch(async (req, res, next) => {
-  const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-
-  const newUser = await User.create({
+  const userData = {
     name: req.body.name,
-    password: hashedPassword,
-  });
+    password: req.body.password,
+  };
 
-  newUser.password = undefined;
+  const newUser = await userService.register(userData);
 
   res.status(201).json(newUser);
 });
 
 export const login = asyncCatch(async (req, res, next) => {
-  const comparedUser = await User.findOne({ name: req.body.name }).select(
-    '+password'
-  );
+  const userData = {
+    name: req.body.name,
+    password: req.body.password,
+  };
 
-  if (!comparedUser) return next(new Error('Wrong Login or Password'));
+  const { token, user } = await userService.login(userData);
 
-  const passwordsMatch = await bcrypt.compare(
-    req.body.password,
-    comparedUser.password
-  );
-
-  if (!passwordsMatch) next(new Error('Wrong Login or Password'));
-
-  comparedUser.password = undefined;
-
-  const token = jwt.sign(
-    { id: comparedUser._id, name: comparedUser.name },
-    process.env.TOKEN_SECRET
-  );
+  console.log(token);
 
   res
     .cookie('jwt', token, {
@@ -64,16 +29,31 @@ export const login = asyncCatch(async (req, res, next) => {
       secure: req.secure,
     })
     .status(200)
-    .json(comparedUser);
+    .json(user);
+});
+
+export function getMe(req, res, next) {
+  req.params.id = res.locals.user.id;
+
+  next();
+}
+
+export const getUser = asyncCatch(async (req, res, next) => {
+  const user = await userService.get(req.params.id);
+
+  res.status(200).json(user);
+});
+
+export const getAllUsers = asyncCatch(async (req, res, next) => {
+  const users = await userService.getAll();
+
+  res.status(200).json({ users });
 });
 
 export const restrictToLoggedUsers = asyncCatch(async (req, res, next) => {
-  const decodedToken = jwt.verify(req.cookies.jwt, process.env.TOKEN_SECRET);
-
-  const user = await User.findById(decodedToken.id);
-
-  if (!user) return next(new Error('Wrong Token'));
+  const user = await userService.restrict(req.cookies.jwt);
 
   res.locals.user = user;
+
   next();
 });
