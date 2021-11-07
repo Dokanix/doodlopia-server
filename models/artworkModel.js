@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const uniqueValidator = require('mongoose-unique-validator');
+import mongoose from 'mongoose';
+import uniqueValidator from 'mongoose-unique-validator';
 
 const artworkSchema = new mongoose.Schema({
   title: {
@@ -37,4 +37,4 @@ artworkSchema.plugin(uniqueValidator);
 
 const Artwork = mongoose.model('Artwork', artworkSchema);
 
-module.exports = Artwork;
+export default Artwork;

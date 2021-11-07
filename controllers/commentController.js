@@ -1,62 +1,46 @@
-const Comment = require('../models/commentModel');
-const Artwork = require('../models/artworkModel');
+import Comment from '../models/commentModel.js';
+import Artwork from '../models/artworkModel.js';
+import asyncCatch from '../utils/asyncCatch.js';
 
-exports.postComment = async (req, res, next) => {
-  try {
-    const newComment = await Comment.create({
-      author: res.locals.user.id,
-      artwork: req.body.artwork,
-      text: req.body.text,
-    });
+export const postComment = asyncCatch(async (req, res, next) => {
+  const newComment = await Comment.create({
+    author: res.locals.user.id,
+    artwork: req.body.artwork,
+    text: req.body.text,
+  });
 
-    await Artwork.findByIdAndUpdate(req.body.artwork, {
-      $inc: { commentCount: 1 },
-    });
+  await Artwork.findByIdAndUpdate(req.body.artwork, {
+    $inc: { commentCount: 1 },
+  });
 
-    res.json(newComment);
-  } catch (error) {
-    next(error);
-  }
-};
+  res.json(newComment);
+});
 
-exports.getCommentsByArtwork = async (req, res, next) => {};
+export const getCommentsByArtwork = asyncCatch(async (req, res, next) => {
+  const comments = await Comment.find({ artwork: req.params.id }).sort(
+    '-addedAt'
+  );
 
-exports.getAllComments = async (req, res, next) => {
-  try {
-    const filterObject = {};
-    if (req.query.artwork) {
-      filterObject.artwork = req.query.artwork;
-    }
+  res.status(200).json({ comments });
+});
 
-    const comments = await Comment.find(filterObject).sort('-addedAt');
+export const getAllComments = asyncCatch(async (req, res, next) => {
+  const comments = await Comment.find({}).sort('-addedAt');
 
-    res.status(200).json({
-      status: 'success',
-      results: comments.length,
-      data: comments,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  res.status(200).json({ comments });
+});
 
-exports.deleteComment = async (req, res, next) => {
-  try {
-    const deletedComment = await Comment.findOneAndDelete({
-      author: res.locals.user.id,
-      _id: req.params.id,
-    });
+export const deleteComment = asyncCatch(async (req, res, next) => {
+  const deletedComment = await Comment.findOneAndDelete({
+    author: res.locals.user.id,
+    _id: req.params.id,
+  });
 
-    if (!deletedComment) return next(Error('No comment to delete'));
+  if (!deletedComment) return next(Error('No comment to delete'));
 
-    await Artwork.findByIdAndUpdate(deletedComment.artwork, {
-      $inc: { commentCount: -1 },
-    });
+  await Artwork.findByIdAndUpdate(deletedComment.artwork, {
+    $inc: { commentCount: -1 },
+  });
 
-    res.status(200).end();
-  } catch (error) {
-    next(error);
-  }
-};
-
-exports.likeComment;
+  res.status(200).end();
+});

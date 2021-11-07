@@ -1,15 +1,17 @@
-const express = require('express');
-const likeController = require('../controllers/likeController');
-const userController = require('../controllers/userController');
+import express from 'express';
+
+import * as likeController from '../controllers/likeController.js';
+import * as userController from '../controllers/userController.js';
 
 const router = express.Router();
 
 router
   .route('/')
+  .get(likeController.getAllLikes)
   .post(userController.restrictToLoggedUsers, likeController.postLike);
 
 router
   .route('/:id')
   .delete(userController.restrictToLoggedUsers, likeController.deleteLike);
 
-module.exports = router;
+export default router;

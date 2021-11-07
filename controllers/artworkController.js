@@ -1,8 +1,9 @@
-const multer = require('multer');
-const sharp = require('sharp');
+import multer from 'multer';
+import sharp from 'sharp';
 
-const Artwork = require('../models/artworkModel');
-const User = require('../models/userModel');
+import asyncCatch from '../utils/asyncCatch.js';
+import Artwork from '../models/artworkModel.js';
+import User from '../models/userModel.js';
 
 const multerStorage = multer.memoryStorage();
 const multerFilter = (req, file, cb) => {
@@ -17,10 +18,10 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
-exports.uploadArtworkImage = upload.single('photo');
+export const uploadArtworkImage = upload.single('photo');
 
-exports.prepareArtworkImage = async (req, res, next) => {
-  if (!req.file) return next();
+export const prepareArtworkImage = asyncCatch(async (req, res, next) => {
+  if (!req.file) return next(new Error('No file to upload'));
 
   req.file.filename = `${res.locals.user.id}-${Date.now()}.jpeg`;
 
@@ -31,65 +32,46 @@ exports.prepareArtworkImage = async (req, res, next) => {
     .toFile(`public/img/${req.file.filename}`);
 
   next();
-};
+});
 
-exports.getTopArtworks = async (req, res, next) => {
+export function getTopArtworks(req, res, next) {
   req.query.sort = '-likeCount';
   next();
-};
+}
 
-exports.getNewArtworks = async (req, res, next) => {
+export function getNewArtworks(req, res, next) {
   req.query.sort = '-addedAt';
   next();
-};
+}
 
-exports.getArtwork = async (req, res, next) => {
-  try {
-    const artwork = await Artwork.findById(req.params.id);
+export const getArtwork = asyncCatch(async (req, res, next) => {
+  const artwork = await Artwork.findById(req.params.id);
 
-    res.json({
-      status: 'success',
-      data: artwork,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  res.json({ artwork });
+});
 
-exports.getAllArtworks = async (req, res, next) => {
-  try {
-    const page = Number(req.query.page ?? 1);
-    const limit = 20;
+export const getAllArtworks = asyncCatch(async (req, res, next) => {
+  const page = Number(req.query.page ?? 1);
+  const limit = 20;
 
-    const artworks = await Artwork.find({})
-      .sort(req.query.sort)
-      .skip((page - 1) * limit)
-      .limit(limit);
+  const artworks = await Artwork.find({})
+    .sort(req.query.sort)
+    .skip((page - 1) * limit)
+    .limit(limit);
 
-    res.json({
-      status: 'success',
-      results: artworks.length,
-      data: artworks,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  res.json({ artworks });
+});
 
-exports.postArtwork = async (req, res, next) => {
-  try {
-    const newArtwork = await Artwork.create({
-      title: req.body.title,
-      path: req.file.filename,
-      author: res.locals.user.id,
-    });
+export const postArtwork = asyncCatch(async (req, res, next) => {
+  const newArtwork = await Artwork.create({
+    title: req.body.title,
+    path: req.file.filename,
+    author: res.locals.user.id,
+  });
 
-    await User.findByIdAndUpdate(req.locals.user.id, {
-      $inc: { experience: 1 },
-    });
+  await User.findByIdAndUpdate(res.locals.user.id, {
+    $inc: { experience: 1 },
+  });
 
-    res.json(newArtwork);
-  } catch (error) {
-    next(error);
-  }
-};
+  res.json(newArtwork);
+});

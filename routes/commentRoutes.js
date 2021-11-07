@@ -1,6 +1,7 @@
-const express = require('express');
-const commentController = require('../controllers/commentController');
-const userController = require('../controllers/userController');
+import express from 'express';
+
+import * as commentController from '../controllers/commentController.js';
+import * as userController from '../controllers/userController.js';
 
 const router = express.Router();
 
@@ -16,4 +17,4 @@ router
     commentController.deleteComment
   );
 
-module.exports = router;
+export default router;

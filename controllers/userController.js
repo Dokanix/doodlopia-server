@@ -1,108 +1,79 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 const saltRounds = 12;
 
-const User = require('../models/userModel');
+import User from '../models/userModel.js';
+import asyncCatch from '../utils/asyncCatch.js';
 
-exports.getMe = async (req, res, next) => {
+export async function getMe(req, res, next) {
   req.params.id = res.locals.user.id;
   next();
-};
+}
 
-exports.getAllUsers = async (req, res, next) => {
-  try {
-    const users = await User.find({});
+export const getAllUsers = asyncCatch(async (req, res, next) => {
+  const users = await User.find({});
 
-    res.status(200).json({
-      status: 'success',
-      results: users.length,
-      data: users,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  res.status(200).json({ users });
+});
 
-exports.getUser = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.params.id);
+export const getUser = asyncCatch(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
 
-    res.status(200).json({
-      status: 'success',
-      data: user,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  res.status(200).json(user);
+});
 
-exports.register = async (req, res, next) => {
-  try {
-    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+export const register = asyncCatch(async (req, res, next) => {
+  const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
 
-    const newUser = await User.create({
-      name: req.body.name,
-      password: hashedPassword,
-    });
+  const newUser = await User.create({
+    name: req.body.name,
+    password: hashedPassword,
+  });
 
-    newUser.password = undefined;
+  newUser.password = undefined;
 
-    res.status(201).json({
-      status: 'success',
-      data: newUser,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  res.status(201).json(newUser);
+});
 
-exports.login = async (req, res, next) => {
-  try {
-    const comparedUser = await User.findOne({ name: req.body.name }).select(
-      '+password'
-    );
+export const login = asyncCatch(async (req, res, next) => {
+  const comparedUser = await User.findOne({ name: req.body.name }).select(
+    '+password'
+  );
 
-    if (!comparedUser) return next(new Error('Wrong Login or Password'));
+  if (!comparedUser) return next(new Error('Wrong Login or Password'));
 
-    const passwordsMatch = await bcrypt.compare(
-      req.body.password,
-      comparedUser.password
-    );
+  const passwordsMatch = await bcrypt.compare(
+    req.body.password,
+    comparedUser.password
+  );
 
-    if (!passwordsMatch) next(new Error('Wrong Login or Password'));
+  if (!passwordsMatch) next(new Error('Wrong Login or Password'));
 
-    comparedUser.password = undefined;
+  comparedUser.password = undefined;
 
-    const token = jwt.sign(
-      { id: comparedUser._id, name: comparedUser.name },
-      process.env.TOKEN_SECRET
-    );
+  const token = jwt.sign(
+    { id: comparedUser._id, name: comparedUser.name },
+    process.env.TOKEN_SECRET
+  );
 
-    res
-      .cookie('jwt', token, {
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000 * 3),
-        httpOnly: true,
-        secure: req.secure,
-      })
-      .status(200)
-      .json({ message: 'success', data: comparedUser });
-  } catch (error) {
-    next(error);
-  }
-};
+  res
+    .cookie('jwt', token, {
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000 * 3),
+      httpOnly: true,
+      secure: req.secure,
+    })
+    .status(200)
+    .json(comparedUser);
+});
 
-exports.restrictToLoggedUsers = async (req, res, next) => {
-  try {
-    const decodedToken = jwt.verify(req.cookies.jwt, process.env.TOKEN_SECRET);
+export const restrictToLoggedUsers = asyncCatch(async (req, res, next) => {
+  const decodedToken = jwt.verify(req.cookies.jwt, process.env.TOKEN_SECRET);
 
-    const user = await User.findById(decodedToken.id);
+  const user = await User.findById(decodedToken.id);
 
-    if (!user) return next(new Error('Wrong Token'));
+  if (!user) return next(new Error('Wrong Token'));
 
-    res.locals.user = user;
-    next();
-  } catch (error) {
-    next(error);
-  }
-};
+  res.locals.user = user;
+  next();
+});
