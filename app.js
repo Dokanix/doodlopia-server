@@ -1,5 +1,6 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
 import artworkRouter from './routes/artworkRoutes.js';
 import userRouter from './routes/userRoutes.js';
@@ -10,6 +11,12 @@ import setOptions from './utils/setOptions.js';
 
 const app = express();
 
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })
+);
 app.use(express.static('public'));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
@@ -38,7 +45,7 @@ app.use((error, req, res, next) => {
 
   console.log(error);
 
-  return res.status(error.statusCode).json({
+  return res.status(400).json({
     status: 'error',
     message: error.message,
   });

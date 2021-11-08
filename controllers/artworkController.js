@@ -64,6 +64,8 @@ export const getArtwork = asyncCatch(async (req, res, next) => {
 export const getAllArtworks = asyncCatch(async (req, res, next) => {
   const artworks = await artworkService.getAll(res.locals.options);
 
+  console.log('GETTING');
+
   res.json({ artworks });
 });
 

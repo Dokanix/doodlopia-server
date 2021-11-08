@@ -22,7 +22,10 @@ export async function get(id) {
 }
 
 export async function getAll(options) {
-  const artworks = await prepareQuery(Artwork.find({}), options);
+  const artworks = await prepareQuery(
+    Artwork.find({}).populate('author'),
+    options
+  );
 
   return artworks;
 }

@@ -2,6 +2,8 @@ import asyncCatch from '../utils/asyncCatch.js';
 import userService from '../services/userService.js';
 
 export const register = asyncCatch(async (req, res, next) => {
+  console.log(req.body);
+
   const userData = {
     name: req.body.name,
     password: req.body.password,
@@ -20,8 +22,6 @@ export const login = asyncCatch(async (req, res, next) => {
 
   const { token, user } = await userService.login(userData);
 
-  console.log(token);
-
   res
     .cookie('jwt', token, {
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000 * 3),
@@ -30,6 +30,10 @@ export const login = asyncCatch(async (req, res, next) => {
     })
     .status(200)
     .json(user);
+});
+
+export const logout = asyncCatch(async (req, res, next) => {
+  res.cookie('jwt', '', { maxAge: 1 }).status(200).end();
 });
 
 export function getMe(req, res, next) {
