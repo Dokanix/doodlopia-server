@@ -25,7 +25,22 @@ router
   .route('/new')
   .get(artworkController.getNewArtworks, artworkController.getAllArtworks);
 
-router.route('/:id').get(artworkController.getArtwork);
+router.route('/hot').get(artworkController.getHotArtworks);
+
+router
+  .route('/liked')
+  .get(
+    userController.restrictToLoggedUsers,
+    artworkController.getLikedArtworks
+  );
+
+router
+  .route('/:id')
+  .get(artworkController.getArtwork)
+  .delete(
+    userController.restrictToLoggedUsers,
+    artworkController.deleteArtwork
+  );
 
 router.route('/:id/comments').get(commentController.getCommentsByArtwork);
 

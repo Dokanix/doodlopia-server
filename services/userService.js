@@ -41,8 +41,8 @@ export async function login(userData) {
   };
 }
 
-export async function get(id) {
-  const user = await User.findById(id);
+export async function get(name) {
+  const user = await User.findOne({ name });
 
   return user;
 }

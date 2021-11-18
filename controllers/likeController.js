@@ -32,6 +32,12 @@ export const getLikesByArtwork = asyncCatch(async (req, res, next) => {
   res.status(200).json({ likes });
 });
 
+export const getOwnLikes = asyncCatch(async (req, res) => {
+  const likes = await likeService.getByUser(res.locals.user.id);
+
+  res.status(200).json({ likes });
+});
+
 export const deleteLike = asyncCatch(async (req, res, next) => {
   await likeService.remove(res.locals.user.id, req.params.id);
 

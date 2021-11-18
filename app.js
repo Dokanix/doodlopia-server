@@ -1,6 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import morgan from 'morgan';
 
 import artworkRouter from './routes/artworkRoutes.js';
 import userRouter from './routes/userRoutes.js';
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
 // My middleware
+app.use(morgan('tiny'));
 app.use(setOptions);
 
 app.use('/artworks', artworkRouter);
@@ -43,7 +45,7 @@ app.use((error, req, res, next) => {
       error.statusCode = 400;
   }
 
-  console.log(error);
+  console.log(error.message);
 
   return res.status(400).json({
     status: 'error',

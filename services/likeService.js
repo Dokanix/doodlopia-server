@@ -1,9 +1,5 @@
 import Artwork from '../models/artworkModel.js';
-import Comment from '../models/commentModel.js';
 import Like from '../models/likeModel.js';
-import User from '../models/userModel.js';
-
-import prepareQuery from '../utils/prepareQuery.js';
 
 export async function create(likeData) {
   const newLike = await Like.create(likeData);
@@ -33,13 +29,19 @@ export async function getByArtwork(id) {
   return likes;
 }
 
+export async function getByUser(id) {
+  const likes = await Like.find({ user: id });
+
+  return likes;
+}
+
 export async function remove(id, userId) {
-  const deletedLike = await Like.findOneAndDelete({
+  const removedLike = await Like.findOneAndDelete({
     _id: id,
     user: userId,
   });
 
-  if (!deletedLike) throw new Error('No like to delete');
+  if (!removedLike) throw new Error('No like to delete');
 
   await Artwork.findByIdAndUpdate(removedLike.artwork, {
     $inc: { likeCount: -1 },
@@ -47,12 +49,12 @@ export async function remove(id, userId) {
 }
 
 export async function removeByArtwork(id, userId) {
-  const deletedLike = await Like.findOneAndDelete({
+  const removedLike = await Like.findOneAndDelete({
     artwork: id,
     user: userId,
   });
 
-  if (!deletedLike) throw new Error('No like to delete');
+  if (!removedLike) throw new Error('No like to delete');
 
   await Artwork.findByIdAndUpdate(removedLike.artwork, {
     $inc: { likeCount: -1 },
@@ -64,6 +66,7 @@ export default {
   get,
   getAll,
   getByArtwork,
+  getByUser,
   remove,
   removeByArtwork,
 };

@@ -4,6 +4,7 @@ import Like from '../models/likeModel.js';
 import User from '../models/userModel.js';
 
 import prepareQuery from '../utils/prepareQuery.js';
+import likeService from './likeService.js';
 
 export async function create(artworkData) {
   const newArtwork = await Artwork.create(artworkData);
@@ -22,16 +23,37 @@ export async function get(id) {
 }
 
 export async function getAll(options) {
-  const artworks = await prepareQuery(
-    Artwork.find({}).populate('author'),
-    options
-  );
+  const artworks = await prepareQuery(Artwork.find({}), options);
+
+  return artworks;
+}
+
+export async function getLiked(id) {
+  let likes = await likeService.getByUser(id);
+
+  likes = likes.map((object) => object.artwork);
+
+  const artworks = await Artwork.find({
+    _id: {
+      $in: likes,
+    },
+  });
+
+  return artworks;
+}
+
+export async function getNewerThan(date) {
+  const artworks = await Artwork.find({
+    addedAt: {
+      $gte: date,
+    },
+  }).sort('-likeCount');
 
   return artworks;
 }
 
 export async function getByAuthor(id, options) {
-  const artworks = await prepareQuery(Artwork.find({ author: id }, options));
+  const artworks = await Artwork.find({ author: id });
 
   return artworks;
 }
@@ -39,19 +61,21 @@ export async function getByAuthor(id, options) {
 export async function remove(id, authorId) {
   const deletedArtwork = await Artwork.findOneAndDelete({
     _id: id,
-    author: authorId,
+    author: { _id: authorId },
   });
 
   if (!deletedArtwork) throw new Error('No artwork to delete');
 
-  await Comment.delete({ artwork: deletedArtwork.id });
-  await Like.delete({ artwork: deletedArtwork.id });
+  await Comment.deleteMany({ artwork: deletedArtwork.id });
+  await Like.deleteMany({ artwork: deletedArtwork.id });
 }
 
 export default {
   create,
   get,
   getAll,
+  getLiked,
+  getNewerThan,
   getByAuthor,
   remove,
 };

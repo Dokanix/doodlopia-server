@@ -25,12 +25,19 @@ const artworkSchema = new mongoose.Schema({
   },
   addedAt: {
     type: Date,
+    index: true,
     default: Date.now(),
   },
   contest: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Contest',
   },
+});
+
+artworkSchema.pre(/^find/, function (next) {
+  this.populate('author');
+
+  next();
 });
 
 artworkSchema.plugin(uniqueValidator);

@@ -20,8 +20,6 @@ export async function get(id) {
 }
 
 export async function getAll(options) {
-  console.log(options);
-
   const comments = await prepareQuery(Comment.find({}), options);
 
   return comments;

@@ -6,7 +6,7 @@ import Artwork from '../models/artworkModel.js';
 export const getSearchResults = asyncCatch(async (req, res, next) => {
   const users = await User.find({
     name: new RegExp(`${req.query.q}`, 'i'),
-  }).limit(5);
+  }).limit(3);
   const artworks = await Artwork.find({
     title: new RegExp(`${req.query.q}`, 'i'),
   }).limit(5);

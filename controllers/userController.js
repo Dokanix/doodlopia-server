@@ -2,8 +2,6 @@ import asyncCatch from '../utils/asyncCatch.js';
 import userService from '../services/userService.js';
 
 export const register = asyncCatch(async (req, res, next) => {
-  console.log(req.body);
-
   const userData = {
     name: req.body.name,
     password: req.body.password,
@@ -37,13 +35,13 @@ export const logout = asyncCatch(async (req, res, next) => {
 });
 
 export function getMe(req, res, next) {
-  req.params.id = res.locals.user.id;
+  req.params.name = res.locals.user.name;
 
   next();
 }
 
 export const getUser = asyncCatch(async (req, res, next) => {
-  const user = await userService.get(req.params.id);
+  const user = await userService.get(req.params.name);
 
   res.status(200).json(user);
 });
@@ -58,6 +56,5 @@ export const restrictToLoggedUsers = asyncCatch(async (req, res, next) => {
   const user = await userService.restrict(req.cookies.jwt);
 
   res.locals.user = user;
-
   next();
 });
